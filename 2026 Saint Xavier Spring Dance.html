@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Saint Xavier Spring Dance</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #dfffe0, #ffffff);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .app {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            margin: 15px auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            transition: 0.2s;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            background: #2ecc71;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            transition: 0.2s;
+        }
+
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            border-radius: 10px;
+        }
+
+        .empty-message {
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        body.live {
+            background: linear-gradient(135deg, #fff2cc, #ffffff);
+        }
+
+        .heart {
+            position: fixed;
+            font-size: 24px;
+            animation: floatUp 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-120px); opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div id="liveBanner" class="card" style="display:none; background:#fff3d6;">
+        <h2>🎉 DANCE IS NOW LIVE 🎉</h2>
+        <p>The event has officially started</p>
+    </div>
+
+    <div class="card">
+        <h2>🔴 LIVE EVENT HUB</h2>
+        <p style="opacity: 0.7;">Updated during the dance</p>
+    </div>
+
+    <div class="card">
+        <h1>🌸 Spring Dance Live</h1>
+        <p>Saint Xavier High School • Official Event Hub</p>
+        <p id="subtitle" style="opacity: 0.6;"></p>
+    </div>
+
+    <div class="card">
+        <h2>📍 Event Info</h2>
+        <p>Date: April 25, 2026</p>
+        <p>Time: 7:00 PM - 10:00 PM</p>
+        <p>Location: Cincinnati Museum Center</p>
+        <p><strong>Countdown:</strong> <span id="countdown"></span></p>
+    </div>
+
+    <div class="card">
+        <h2>💖 Live Reactions</h2>
+        <p>Tap to send energy to the dance</p>
+        <button onclick="spawnHeart()">Send Heart 💖</button>
+    </div>
+
+    <div class="card">
+        <h2>🎶 Song Requests</h2>
+        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSex01kR6TZeVWKqcxko25FyiLAPQMyZP93lBVcHY0AlRro6vw/viewform', '_blank')">
+            Request a Song
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>💬 Shoutouts</h2>
+        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSchgrhBcYIeFj2qResThuP6k7txKH8u4ge4uoP2QCw37rxxig/viewform', '_blank')">
+            Send a Shoutout
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>📸 Dance Memory Wall</h2>
+        <p style="opacity:0.7;">Photos update automatically during the event 📸</p>
+
+        <iframe src="https://drive.google.com/embeddedfolderview?id=1VhUSI53zGP7LlCwRzcOqnrr_2kWRWx1niHZoXgIDhuvcUDesgfiEuGYEbSd74K0S7zrAAoBI#grid"></iframe>
+
+        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdBnweu6mG0GjuYQNh3vS54r9eLVn04rnN_wA3RtthrgH9xOw/viewform', '_blank')">
+            Upload a Photo
+        </button>
+
+        <p class="empty-message">Photos will appear here during the event 🎉</p>
+    </div>
+
+    <div class="card" onclick="this.innerHTML='🌸 Thanks for being here. Enjoy the night 🌸'">
+        <p style="opacity:0.7; cursor:pointer;">
+            Tap here before you go ✨
+        </p>
+    </div>
+
+</div>
+
+<script>
+    (function () {
+        const subtitle = document.getElementById("subtitle");
+        const countdownEl = document.getElementById("countdown");
+        const liveBanner = document.getElementById("liveBanner");
+
+    function updateSubtitle() {
+    const now = new Date();
+
+    const eventStart = new Date("2026-04-25T20:00:00"); // 8:00 PM
+    const eventEnd = new Date("2026-04-25T22:00:00");   // optional end time
+
+    if (now >= eventStart && now <= eventEnd) {
+        subtitle.innerText = "Dance is happening right now 🎉";
+    } else if (now < eventStart) {
+        subtitle.innerText = "Getting ready for the night 🌸";
+    } else {
+        subtitle.innerText = "Thanks for coming! 🌸";
+    }
+}
+    function spawnHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerText = "❤️";
+
+        heart.style.left = Math.random() * window.innerWidth + "px";
+        heart.style.top = (window.innerHeight - 100) + "px";
+
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 2000);
+    }
+
+    const eventDate = new Date("April 25, 2026 19:00:00").getTime();
+
+    function updateCountdown() {
+        const now = Date.now();
+        const distance = eventDate - now;
+
+        if (distance <= 0) {
+            countdownEl.innerText = "🎉 It's dance time!";
+            liveBanner.style.display = "block";
+            document.body.classList.add("live");
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((distance / (1000 * 60)) % 60);
+
+        countdownEl.innerText =
+            `${days}d ${hours}h ${minutes}m until the dance 🌸`;
+    }
+
+    updateSubtitle();
+    updateCountdown();
+
+    setInterval(updateSubtitle, 60000);
+    setInterval(updateCountdown, 60000);
+
+    window.spawnHeart = spawnHeart;
+})();
+</script>
+
+<div class="card" style="opacity:0.6; font-size: 12px; letter-spacing: 1px; font-style: italic;">
+    Built with 💚 by a student at Saint Xavier High School
+</div>
+
+</body>
+</html>
