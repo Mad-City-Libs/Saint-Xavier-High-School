@@ -6,6 +6,13 @@
     <title>2026 Saint Xavier Spring Dance</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
+    <!-- UploadCare Setup -->
+    <script>
+      UPLOADCARE_PUBLIC_KEY = "21b1fcb136c884e4e46f";
+    </script>
+    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+    <script src="https://ucarecdn.com/libs/widget-gallery/1.x/uploadcare.gallery.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,13 +59,6 @@
             transition: 0.2s;
         }
 
-        iframe {
-            width: 100%;
-            height: 450px;
-            border: 0;
-            border-radius: 10px;
-        }
-
         .empty-message {
             opacity: 0.6;
             font-style: italic;
@@ -73,6 +73,14 @@
             font-size: 24px;
             animation: floatUp 2s ease-out forwards;
             pointer-events: none;
+        }
+
+        .gallery-container {
+            margin-top: 15px;
+        }
+
+        .uploadcare-gallery {
+            margin-top: 10px;
         }
 
         @keyframes floatUp {
@@ -146,13 +154,15 @@
         <h2>📸 Dance Memory Wall</h2>
         <p style="opacity:0.7;">Photos update automatically during the event 📸</p>
 
-        <iframe src="https://drive.google.com/embeddedfolderview?id=1VhUSI53zGP7LlCwRzcOqnrr_2kWRWx1niHZoXgIDhuvcUDesgfiEuGYEbSd74K0S7zrAAoBI#grid"></iframe>
+        <div class="gallery-container">
+            <!-- UploadCare Gallery -->
+            <div id="memory-wall"></div>
 
-        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdBnweu6mG0GjuYQNh3vS54r9eLVn04rnN_wA3RtthrgH9xOw/viewform', '_blank')">
-            Upload a Photo
-        </button>
+            <!-- UploadCare Upload Button -->
+            <button id="uploadcare-button">Upload a Photo</button>
+        </div>
 
-        <p class="empty-message">Photos will appear here during the event 🎉</p>
+        <p class="empty-message">If you don't see photos yet, upload one above 🎉</p>
     </div>
 
     <div class="card" onclick="this.innerHTML='🌸 Thanks for being here. Enjoy the night 🌸'">
@@ -164,6 +174,19 @@
 </div>
 
 <script>
+    // Upload button logic
+    document.addEventListener("DOMContentLoaded", function () {
+        var btn = document.getElementById("uploadcare-button");
+        if (btn) {
+            btn.onclick = function () {
+                uploadcare.openDialog(null, { publicKey: "21b1fcb136c884e4e46f" })
+                    .done(function (fileGroup) {
+                        console.log("Uploaded:", fileGroup);
+                    });
+            };
+        }
+    });
+
     (function () {
         const subtitle = document.getElementById("subtitle");
         const countdownEl = document.getElementById("countdown");
@@ -172,8 +195,8 @@
         function updateSubtitle() {
             const now = new Date();
 
-            const eventStart = new Date("2026-04-25T20:00:00-04:00"); // 8:00 PM
-            const eventEnd = new Date("2026-04-25T22:30:00-04:00");   // optional end time
+            const eventStart = new Date("2026-04-25T20:00:00-04:00");
+            const eventEnd = new Date("2026-04-25T22:30:00-04:00");
 
             if (now >= eventStart && now <= eventEnd) {
                 subtitle.innerText = "Dance is happening right now 🎉";
@@ -208,7 +231,7 @@
                 countdownEl.innerText = "🎉 It's dance time!";
                 liveBanner.style.display = "block";
                 document.body.classList.add("live");
-                clearInterval(countdownInterval); //stops loop
+                clearInterval(countdownInterval);
                 return;
             }
 
@@ -229,6 +252,32 @@
 
         window.spawnHeart = spawnHeart;
     })();
+
+    async function loadGallery() {
+    const res = await fetch("https://api.uploadcare.com/files/?ordering=-datetime_uploaded", {
+        headers: {
+            "Authorization": "Uploadcare.Simple 21b1fcb136c884e4e46f:public",
+            "Accept": "application/json"
+        }
+    });
+
+    const data = await res.json();
+    const wall = document.getElementById("memory-wall");
+
+    wall.innerHTML = "";
+
+    data.results.forEach(file => {
+        const img = document.createElement("img");
+        img.src = file.original_file_url;
+        img.style.width = "100%";
+        img.style.borderRadius = "10px";
+        img.style.marginBottom = "10px";
+        wall.appendChild(img);
+    });
+}
+
+loadGallery();
+setInterval(loadGallery, 5000);
 </script>
 
 <div class="card" style="opacity:0.6; font-size: 12px; letter-spacing: 1px; font-style: italic;">
