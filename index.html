@@ -6,13 +6,6 @@
     <title>2026 Saint Xavier Spring Dance</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-    <!-- UploadCare Setup -->
-    <script>
-      UPLOADCARE_PUBLIC_KEY = "21b1fcb136c884e4e46f";
-    </script>
-    <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
-    <script src="https://ucarecdn.com/libs/widget-gallery/1.x/uploadcare.gallery.min.js"></script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,6 +52,12 @@
             transition: 0.2s;
         }
 
+        .gallery-container img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
         .empty-message {
             opacity: 0.6;
             font-style: italic;
@@ -73,14 +72,6 @@
             font-size: 24px;
             animation: floatUp 2s ease-out forwards;
             pointer-events: none;
-        }
-
-        .gallery-container {
-            margin-top: 15px;
-        }
-
-        .uploadcare-gallery {
-            margin-top: 10px;
         }
 
         @keyframes floatUp {
@@ -152,17 +143,13 @@
 
     <div class="card">
         <h2>📸 Dance Memory Wall</h2>
-        <p style="opacity:0.7;">Photos update automatically during the event 📸</p>
+        <p style="opacity:0.7;">Photos appear instantly — no internet upload needed</p>
 
-        <div class="gallery-container">
-            <!-- UploadCare Gallery -->
-            <div id="memory-wall"></div>
+        <div class="gallery-container" id="memory-wall"></div>
 
-            <!-- UploadCare Upload Button -->
-            <button id="uploadcare-button">Upload a Photo</button>
-        </div>
+        <button id="upload-local">Upload a Photo</button>
 
-        <p class="empty-message">If you don't see photos yet, upload one above 🎉</p>
+        <p class="empty-message">Upload a photo to see it here 🎉</p>
     </div>
 
     <div class="card" onclick="this.innerHTML='🌸 Thanks for being here. Enjoy the night 🌸'">
@@ -174,110 +161,103 @@
 </div>
 
 <script>
-    // Upload button logic
-    document.addEventListener("DOMContentLoaded", function () {
-        var btn = document.getElementById("uploadcare-button");
-        if (btn) {
-            btn.onclick = function () {
-                uploadcare.openDialog(null, { publicKey: "21b1fcb136c884e4e46f" })
-                    .done(function (fileGroup) {
-                        console.log("Uploaded:", fileGroup);
-                    });
-            };
-        }
-    });
+document.addEventListener("DOMContentLoaded", () => {
 
-    (function () {
-        const subtitle = document.getElementById("subtitle");
-        const countdownEl = document.getElementById("countdown");
-        const liveBanner = document.getElementById("liveBanner");
-
-        function updateSubtitle() {
-            const now = new Date();
-
-            const eventStart = new Date("2026-04-25T20:00:00-04:00");
-            const eventEnd = new Date("2026-04-25T22:30:00-04:00");
-
-            if (now >= eventStart && now <= eventEnd) {
-                subtitle.innerText = "Dance is happening right now 🎉";
-            } else if (now < eventStart) {
-                subtitle.innerText = "Getting ready for the night 🌸";
-            } else {
-                subtitle.innerText = "Thanks for coming! 🌸";
-            }
-        }
-
-        function spawnHeart() {
-            const heart = document.createElement("div");
-            heart.className = "heart";
-            heart.innerText = "❤️";
-
-            heart.style.left = Math.random() * window.innerWidth + "px";
-            heart.style.top = (window.innerHeight - 100) + "px";
-
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 2000);
-        }
-
-        const eventDate = new Date("2026-04-25T20:00:00-04:00").getTime();
-
-        let countdownInterval;
-        
-        function updateCountdown() {
-            const now = Date.now();
-            const distance = eventDate - now;
-
-            if (distance <= 0) {
-                countdownEl.innerText = "🎉 It's dance time!";
-                liveBanner.style.display = "block";
-                document.body.classList.add("live");
-                clearInterval(countdownInterval);
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
-            const minutes = Math.floor((distance / (1000 * 60)) % 60).toString().padStart(2, '0');
-            const seconds = Math.floor((distance / 1000) % 60).toString().padStart(2, '0');
-
-            countdownEl.innerText =
-                `${days}d ${hours}h ${minutes}m ${seconds}s until the dance 🌸`;
-        }
-
-        updateSubtitle();
-        updateCountdown();
-
-        setInterval(updateSubtitle, 60000);
-        countdownInterval = setInterval(updateCountdown, 1000);
-
-        window.spawnHeart = spawnHeart;
-    })();
-
-    async function loadGallery() {
-    const res = await fetch("https://api.uploadcare.com/files/?ordering=-datetime_uploaded", {
-        headers: {
-            "Authorization": "Uploadcare.Simple 21b1fcb136c884e4e46f:public",
-            "Accept": "application/json"
-        }
-    });
-
-    const data = await res.json();
+    // ⭐ INSTANT LOCAL GALLERY ⭐
+    const gallery = [];
     const wall = document.getElementById("memory-wall");
 
-    wall.innerHTML = "";
+    document.getElementById("upload-local").onclick = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
 
-    data.results.forEach(file => {
-        const img = document.createElement("img");
-        img.src = file.original_file_url;
-        img.style.width = "100%";
-        img.style.borderRadius = "10px";
-        img.style.marginBottom = "10px";
-        wall.appendChild(img);
-    });
-}
+        input.onchange = () => {
+            const file = input.files[0];
+            const reader = new FileReader();
 
-loadGallery();
-setInterval(loadGallery, 5000);
+            reader.onload = () => {
+                gallery.unshift(reader.result);
+                renderGallery();
+            };
+
+            reader.readAsDataURL(file);
+        };
+
+        input.click();
+    };
+
+    function renderGallery() {
+        wall.innerHTML = "";
+        gallery.forEach(url => {
+            const img = document.createElement("img");
+            img.src = url;
+            wall.appendChild(img);
+        });
+    }
+
+    // ⭐ HEARTS ⭐
+    window.spawnHeart = function () {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerText = "❤️";
+
+        heart.style.left = Math.random() * window.innerWidth + "px";
+        heart.style.top = (window.innerHeight - 100) + "px";
+
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 2000);
+    };
+
+    // ⭐ COUNTDOWN ⭐
+    const subtitle = document.getElementById("subtitle");
+    const countdownEl = document.getElementById("countdown");
+    const liveBanner = document.getElementById("liveBanner");
+
+    function updateSubtitle() {
+        const now = new Date();
+        const eventStart = new Date("2026-04-25T20:00:00-04:00");
+        const eventEnd = new Date("2026-04-25T22:30:00-04:00");
+
+        if (now >= eventStart && now <= eventEnd) {
+            subtitle.innerText = "Dance is happening right now 🎉";
+        } else if (now < eventStart) {
+            subtitle.innerText = "Getting ready for the night 🌸";
+        } else {
+            subtitle.innerText = "Thanks for coming! 🌸";
+        }
+    }
+
+    const eventDate = new Date("2026-04-25T20:00:00-04:00").getTime();
+    let countdownInterval;
+
+    function updateCountdown() {
+        const now = Date.now();
+        const distance = eventDate - now;
+
+        if (distance <= 0) {
+            countdownEl.innerText = "🎉 It's dance time!";
+            liveBanner.style.display = "block";
+            document.body.classList.add("live");
+            clearInterval(countdownInterval);
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+        const minutes = Math.floor((distance / (1000 * 60)) % 60).toString().padStart(2, '0');
+        const seconds = Math.floor((distance / 1000) % 60).toString().padStart(2, '0');
+
+        countdownEl.innerText =
+            `${days}d ${hours}h ${minutes}m ${seconds}s until the dance 🌸`;
+    }
+
+    updateSubtitle();
+    updateCountdown();
+    setInterval(updateSubtitle, 60000);
+    countdownInterval = setInterval(updateCountdown, 1000);
+
+});
 </script>
 
 <div class="card" style="opacity:0.6; font-size: 12px; letter-spacing: 1px; font-style: italic;">
