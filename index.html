@@ -52,10 +52,11 @@
             transition: 0.2s;
         }
 
-        .gallery-container img {
+        iframe {
             width: 100%;
+            height: 450px;
+            border: 0;
             border-radius: 10px;
-            margin-bottom: 10px;
         }
 
         .empty-message {
@@ -102,7 +103,7 @@
     </div>
 
     <div class="card">
-        <h2>🔴 Live Event Hub</h2>
+        <h2>🔴 LIVE EVENT HUB</h2>
         <p style="opacity: 0.7;">Updated during the dance</p>
     </div>
 
@@ -143,13 +144,15 @@
 
     <div class="card">
         <h2>📸 Dance Memory Wall</h2>
-        <p style="opacity:0.7;">Photos appear instantly — no internet upload needed</p>
+        <p style="opacity:0.7;">Photos update automatically during the event 📸</p>
 
-        <div class="gallery-container" id="memory-wall"></div>
+        <iframe src="https://drive.google.com/embeddedfolderview?id=1IEw2vsfe5zZ3NJq6_zkxg_aloGKqQICG_8UpG0JPqvgFJBXJTlazY1PycqA3lXM49iHYEYHv#grid"></iframe>
 
-        <button id="upload-local">Upload a Photo</button>
+        <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSdBnweu6mG0GjuYQNh3vS54r9eLVn04rnN_wA3RtthrgH9xOw/viewform', '_blank')">
+            Upload a Photo
+        </button>
 
-        <p class="empty-message">Upload a photo to see it here 🎉</p>
+        <p class="empty-message">Photos will appear here during the event 🎉</p>
     </div>
 
     <div class="card" onclick="this.innerHTML='🌸 Thanks for being here. Enjoy the night 🌸'">
@@ -161,103 +164,71 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+    (function () {
+        const subtitle = document.getElementById("subtitle");
+        const countdownEl = document.getElementById("countdown");
+        const liveBanner = document.getElementById("liveBanner");
 
-    // ⭐ INSTANT LOCAL GALLERY ⭐
-    const gallery = [];
-    const wall = document.getElementById("memory-wall");
+        function updateSubtitle() {
+            const now = new Date();
 
-    document.getElementById("upload-local").onclick = () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
+            const eventStart = new Date("2026-04-25T20:00:00-04:00"); // 8:00 PM
+            const eventEnd = new Date("2026-04-25T22:30:00-04:00");   // optional end time
 
-        input.onchange = () => {
-            const file = input.files[0];
-            const reader = new FileReader();
-
-            reader.onload = () => {
-                gallery.unshift(reader.result);
-                renderGallery();
-            };
-
-            reader.readAsDataURL(file);
-        };
-
-        input.click();
-    };
-
-    function renderGallery() {
-        wall.innerHTML = "";
-        gallery.forEach(url => {
-            const img = document.createElement("img");
-            img.src = url;
-            wall.appendChild(img);
-        });
-    }
-
-    // ⭐ HEARTS ⭐
-    window.spawnHeart = function () {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerText = "❤️";
-
-        heart.style.left = Math.random() * window.innerWidth + "px";
-        heart.style.top = (window.innerHeight - 100) + "px";
-
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 2000);
-    };
-
-    // ⭐ COUNTDOWN ⭐
-    const subtitle = document.getElementById("subtitle");
-    const countdownEl = document.getElementById("countdown");
-    const liveBanner = document.getElementById("liveBanner");
-
-    function updateSubtitle() {
-        const now = new Date();
-        const eventStart = new Date("2026-04-25T20:00:00-04:00");
-        const eventEnd = new Date("2026-04-25T22:30:00-04:00");
-
-        if (now >= eventStart && now <= eventEnd) {
-            subtitle.innerText = "Dance is happening right now 🎉";
-        } else if (now < eventStart) {
-            subtitle.innerText = "Getting ready for the night 🌸";
-        } else {
-            subtitle.innerText = "Thanks for coming! 🌸";
-        }
-    }
-
-    const eventDate = new Date("2026-04-25T20:00:00-04:00").getTime();
-    let countdownInterval;
-
-    function updateCountdown() {
-        const now = Date.now();
-        const distance = eventDate - now;
-
-        if (distance <= 0) {
-            countdownEl.innerText = "🎉 It's dance time!";
-            liveBanner.style.display = "block";
-            document.body.classList.add("live");
-            clearInterval(countdownInterval);
-            return;
+            if (now >= eventStart && now <= eventEnd) {
+                subtitle.innerText = "Dance is happening right now 🎉";
+            } else if (now < eventStart) {
+                subtitle.innerText = "Getting ready for the night 🌸";
+            } else {
+                subtitle.innerText = "Thanks for coming! 🌸";
+            }
         }
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
-        const minutes = Math.floor((distance / (1000 * 60)) % 60).toString().padStart(2, '0');
-        const seconds = Math.floor((distance / 1000) % 60).toString().padStart(2, '0');
+        function spawnHeart() {
+            const heart = document.createElement("div");
+            heart.className = "heart";
+            heart.innerText = "❤️";
 
-        countdownEl.innerText =
-            `${days}d ${hours}h ${minutes}m ${seconds}s until the dance 🌸`;
-    }
+            heart.style.left = Math.random() * window.innerWidth + "px";
+            heart.style.top = (window.innerHeight - 100) + "px";
 
-    updateSubtitle();
-    updateCountdown();
-    setInterval(updateSubtitle, 60000);
-    countdownInterval = setInterval(updateCountdown, 1000);
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 2000);
+        }
 
-});
+        const eventDate = new Date("2026-04-25T20:00:00-04:00").getTime();
+
+        let countdownInterval;
+        
+        function updateCountdown() {
+            const now = Date.now();
+            const distance = eventDate - now;
+
+            if (distance <= 0) {
+                countdownEl.innerText = "🎉 It's dance time!";
+                liveBanner.style.display = "block";
+                document.body.classList.add("live");
+                clearInterval(countdownInterval); //stops loop
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+            const minutes = Math.floor((distance / (1000 * 60)) % 60).toString().padStart(2, '0');
+            const seconds = Math.floor((distance / 1000) % 60).toString().padStart(2, '0');
+
+            countdownEl.innerText =
+                `${days}d ${hours}h ${minutes}m ${seconds}s until the dance 🌸`;
+        }
+
+        updateSubtitle();
+        updateCountdown();
+
+        setInterval(updateSubtitle, 60000);
+        countdownInterval = setInterval(updateCountdown, 1000);
+
+        window.spawnHeart = spawnHeart;
+    })();
 </script>
 
 <div class="card" style="opacity:0.6; font-size: 12px; letter-spacing: 1px; font-style: italic;">
